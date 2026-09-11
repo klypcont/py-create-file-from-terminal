@@ -3,62 +3,75 @@ import os
 import sys
 
 
-def main() -> None:
+def parse_arguments(args: list[str]) -> tuple[list[str], str | None]:
     directories = []
     file_name = None
-
-    i = 1
-    while i < len(sys.argv):
-        if sys.argv[i] == "-d":
-            i += 1
-            while i < len(sys.argv) and not sys.argv[i].startswith("-"):
-                directories.append(sys.argv[i])
-                i += 1
+    index = 1
+    while index < len(args):
+        current_arg = args[index]
+        if current_arg == "-d":
+            index += 1
+            while index < len(args) and not args[index].startswith("-"):
+                directories.append(args[index])
+                index += 1
             continue
-        if sys.argv[i] == "-f":
-            i += 1
-            if i < len(sys.argv) and not sys.argv[i].startswith("-"):
-                file_name = sys.argv[i]
-                i += 1
+        if current_arg == "-f":
+            index += 1
+            if index < len(args) and not args[index].startswith("-"):
+                file_name = args[index]
+                index += 1
             continue
-        i += 1
+        index += 1
+    return directories, file_name
 
-    dir_path = ""
+
+def get_content_lines() -> list[str]:
+    content_lines = []
+    while True:
+        line = input("Enter content line: ")
+        if line == "stop":
+            break
+        content_lines.append(line)
+    return content_lines
+
+
+def format_file_content(lines: list[str]) -> str:
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    formatted_lines = [timestamp]
+    for line_number, line in enumerate(lines, start=1):
+        formatted_lines.append(f"{line_number} {line}")
+    return "\n".join(formatted_lines)
+
+
+def main() -> None:
+    directories, file_name = parse_arguments(sys.argv)
+
+    directory_path = ""
     if directories:
-        dir_path = os.path.join(*directories)
-        os.makedirs(dir_path, exist_ok=True)
+        directory_path = os.path.join(*directories)
+        os.makedirs(directory_path, exist_ok=True)
 
     if file_name is not None:
-        if dir_path:
-            full_path = os.path.join(dir_path, file_name)
+        if directory_path:
+            target_file_path = os.path.join(directory_path, file_name)
         else:
-            full_path = file_name
+            target_file_path = file_name
 
-        lines = []
-        while True:
-            line = input("Enter content line: ")
-            if line == "stop":
-                break
-            lines.append(line)
-
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        new_content = [timestamp]
-        for index, line in enumerate(lines, start=1):
-            new_content.append(f"{index} {line}")
-        block = "\n".join(new_content)
+        lines = get_content_lines()
+        new_block = format_file_content(lines)
 
         file_exists = (
-            os.path.exists(full_path)
-            and os.path.getsize(full_path) > 0
+            os.path.exists(target_file_path)
+            and os.path.getsize(target_file_path) > 0
         )
         mode = "a" if file_exists else "w"
 
-        with open(full_path, mode, encoding="utf-8") as f:
+        with open(target_file_path, mode, encoding="utf-8") as target_file:
             if file_exists:
-                f.write("\n\n" + block)
+                target_file.write(f"\n\n{new_block}")
             else:
-                f.write(block)
+                target_file.write(new_block)
 
 
-if __name__ == "__main__":
+if __name__ in ("__main__", "<run_path>"):
     main()
