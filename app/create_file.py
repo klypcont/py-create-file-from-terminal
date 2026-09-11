@@ -3,29 +3,25 @@ import os
 import sys
 
 
-def parse_args(args: list[str]) -> tuple[list[str], str | None]:
+def main() -> None:
     directories = []
     file_name = None
+
     i = 1
-    while i < len(args):
-        if args[i] == "-d":
+    while i < len(sys.argv):
+        if sys.argv[i] == "-d":
             i += 1
-            while i < len(args) and not args[i].startswith("-"):
-                directories.append(args[i])
+            while i < len(sys.argv) and not sys.argv[i].startswith("-"):
+                directories.append(sys.argv[i])
                 i += 1
             continue
-        if args[i] == "-f":
+        if sys.argv[i] == "-f":
             i += 1
-            if i < len(args) and not args[i].startswith("-"):
-                file_name = args[i]
+            if i < len(sys.argv) and not sys.argv[i].startswith("-"):
+                file_name = sys.argv[i]
                 i += 1
             continue
         i += 1
-    return directories, file_name
-
-
-def main() -> None:
-    directories, file_name = parse_args(sys.argv)
 
     dir_path = ""
     if directories:
@@ -59,7 +55,7 @@ def main() -> None:
 
         with open(full_path, mode, encoding="utf-8") as f:
             if file_exists:
-                f.write("\n" + block)
+                f.write("\n\n" + block)
             else:
                 f.write(block)
 
